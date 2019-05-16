@@ -16,7 +16,10 @@ app.all('/bye', (request, response) => {
 });
 
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.listen(port, () => console.log('El servidor esta corriendo'));
 
+
+// Hacer 3 métodos diferentes con respuesta de status
 app.get('/get', (request,response ) => {
     response.status(280).send('Metodo GET');
 });
@@ -26,6 +29,20 @@ app.patch('/patch', (request,response ) => {
 app.delete('/delete', (request,response ) => {
     response.status(404).send('Metodo DELETE . Nada para borrar');
 });
+//Segundo Ejercicio
+//middleware
+app.all( '*', (request,response,next ) => {
+   console.log("Usuario menganito hizo una peticion a: ", request.path)
+    next();
+});
+app.get('/igual', (request,response ) => {
+    response.send("Ya entraste!");
+});
 
+app.get('/igual', (request,response ) => {
+    response.send("Ya entraste por segunda vez!");
+});
 
-app.listen(port, () => console.log('El servidor esta corriendo'));
+app.get('/diferente', (request,response ) => {
+    response.send("Asegurate!");
+});
