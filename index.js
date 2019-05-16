@@ -4,8 +4,10 @@ const url = require('url');
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
-const bodyParser = require ('body-parser');
-const cookieParser = require ('cookie-parser');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+var jwt = require('jsonwebtoken');
+
 
 const app = express();
 const port = 3000;
@@ -50,7 +52,7 @@ app.get('/diferente', (request, response) => {
 });
 // Tercer Ejercicio --------------------------------------------------
 
-let usuarios=[];
+let usuarios = [];
 
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -66,16 +68,53 @@ app.get('/cookie', (request, response) => {
 });
 
 app.get('/usuarios', (request, response) => {
-    response.status(200).send({Lista : usuarios});
+    response.status(200).send({ Lista: usuarios });
 });
 
 app.post('/usuarios', (request, response) => {
-    if(request.body.usuario && request.body.contra){  
+    if (request.body.usuario && request.body.contra) {
         usuarios.push(request.body);
         response.status(201).send("Usuario agregado!");
-    }else{
-        response.status(400).send({ error: ' El usuario no se agrego! , Intentalo de nuevo ( Revisa los nombres )'});
+    } else {
+        response.status(400).send({ error: ' El usuario no se agrego! , Intentalo de nuevo ( Revisa los nombres )' });
     }
 });
 
+// Cuarto Ejercicio --------------------------------------------------
 
+//endpoint de autorizacion
+const privateKey = "yaestalisto";
+
+
+app.post('/auth/signin', (request, response) => {
+    if (!(request.body.user && request.body.pass)) {
+        response.status(400).send("Se necesita usuario y contraseña!")
+    } else {
+
+        jwt.sign({ user: request.body.user, theme: 'black' }, privateKey, function (err, token) {
+            if (err) {
+                response.send(500).end();
+            } else {
+                response.status(200).send({ token: token })
+            }
+        });
+    }
+});
+
+//middleware
+app.use((request, response, next) => {
+    jwt.verify(request.headers.authorization, privateKey, function (err, decoded) {
+        if (err) {
+            response.status(500).end('uuuuuuyyyyyy somethings wrong')
+        } else {
+            console.log(decoded)
+            // checar ese usuario en la base datos a ver si existe
+            next();
+        }
+    });
+});
+
+//otro endpoint
+app.get('/fin', (request, response) => {
+    response.send("¡Acabaste! Felicidades!");
+});
